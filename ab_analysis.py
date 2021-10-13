@@ -8,7 +8,7 @@
 # @version: 1.1.0
 # @author: Bryan Briney, Rinat Mukhometzianov
 # @props: IgBLAST team (http://www.ncbi.nlm.nih.gov/igblast/igblast.cgi)
-# @license: MIT (http://opensource.org/licenses/MIT) 
+# @license: MIT (http://opensource.org/licenses/MIT)
 #
 ###########################################################################
 
@@ -98,7 +98,6 @@ class LaunchThread(threading.Thread):
                    "-auxiliary_data optional_file/{0}_gl.aux -show_translation -outfmt 3 " \
                    "-num_alignments_V 1 -num_alignments_D 1 -num_alignments_J 1 -query {1}" \
                    " -out {2}".format(args.species, self.in_file, self.out_file, binary)
-        print "Command " + self.cmd
 
     def run(self):
         p = Popen(self.cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -106,7 +105,7 @@ class LaunchThread(threading.Thread):
 
 
 #####################################################################
-# 
+#
 #                        FILES AND DIRECTORIES
 #
 #####################################################################
@@ -184,7 +183,7 @@ def file_splitter(file_name, splitlen, num_seqs, temp_directory):
 
 
 #####################################################################
-# 
+#
 #                            PRINTING
 #
 #####################################################################
@@ -223,7 +222,7 @@ def print_summary_output(g, e, f, blast_time, parse_time):
 
 
 #####################################################################
-# 
+#
 #                              PARSING
 #
 #####################################################################
@@ -235,17 +234,17 @@ def line_generator(blast_file):
 
 
 def block_generator(blast_file):
-    l = line_generator(blast_file)
-    line = next(l)
+    l_gen = line_generator(blast_file)
+    line = next(l_gen)
     while line.find('Query= ') == -1:
-        line = next(l)
+        line = next(l_gen)
     block = line.replace('Query= ', '')
     while True:
         try:
-            line = next(l)
+            line = next(l_gen)
             while line.find('Query= ') == -1:
                 block += line
-                line = next(l)
+                line = next(l_gen)
             yield block
             block = line.replace('Query= ', '')
         except StopIteration:
@@ -269,7 +268,6 @@ def do_parse(blastout):
     pool.close()
     pool.join()
     good, exceptions, failed = process_parse_data(result, out_file)
-    result = []
     return good, exceptions, failed
 
 
@@ -333,7 +331,7 @@ def build_failed_handle(out_file):
 
 
 #####################################################################
-# 
+#
 #                       INPUT PROCESSING
 #
 #####################################################################
@@ -391,7 +389,7 @@ def preprocess(files):
 
 
 #####################################################################
-# 
+#
 #                            IgBLAST
 #
 #####################################################################
@@ -424,7 +422,6 @@ def parallel_igblast(in_file, out_file):
     blastout_list = []
 
     os_name = get_system_name()
-    print "OS f-string " + os_name
     # run IgBLASTn in parallel
     for f in split_files:
         temp_out_file = os.path.join(temp_out_directory, os.path.basename(f).split('.')[0] + "_blastout")

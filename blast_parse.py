@@ -8,7 +8,7 @@
 # @version: 0.3.0
 # @author: Bryan Briney, Rinat Mukhometzianov
 # @props: IgBLAST team (http://www.ncbi.nlm.nih.gov/igblast/igblast.cgi)
-# @license: MIT (http://opensource.org/licenses/MIT) 
+# @license: MIT (http://opensource.org/licenses/MIT)
 #
 ###########################################################################
 
@@ -206,7 +206,7 @@ class BlastParse(object):
         self.chunks['score'] = []
         while row.find('Sequences producing significant alignments:') == -1:
             row = next(self.iter)
-        row = next(self.iter)
+        next(self.iter)
         row = next(self.iter)
         while row != '':
             self.chunks['score'].append(row.rstrip('\n').split())
@@ -349,7 +349,7 @@ class BlastParse(object):
 
     def _v_gene_id(self):
 
-        v_split = re.split('[-\*]', self.var_gene)
+        v_split = re.split('[-*]', self.var_gene)
         self.var_gene_fam = re.sub('VH|IGHV|VK|IGKV|VL|IGLV', '', v_split[0])
         if len(v_split) > 3:
             self.var_gene_gene = '-'.join(v_split[1:3])
@@ -359,13 +359,13 @@ class BlastParse(object):
 
     def _j_gene_id(self):
 
-        j_split = re.split('[-\*]', self.join_gene)
+        j_split = re.split('[-*]', self.join_gene)
         self.join_gene_gene = re.sub('IGHJ|IGKJ|IGLJ', '', j_split[0])
         self.join_gene_allele = j_split[1]
 
     def _d_gene_id(self):
 
-        d_split = re.split('[-\*]', self.div_gene)
+        d_split = re.split('[-*]', self.div_gene)
         self.div_gene_fam = re.sub('IGHD|IGKD|IGLD', '', d_split[0])
         self.div_gene_gene = d_split[1]
         self.div_gene_allele = d_split[2]
@@ -382,8 +382,10 @@ class BlastParse(object):
         self.div_nt_identity = ''
         self.div_muts_nt = ''
         self.div_muts_nt_count = ''
-        self.div_ins = ''
-        self.div_del = ''
+        self.div_ins = []
+        self.div_del = []
+        self.div_start = 0
+        self.div_germ_offset_nt = 0
 
     ######################################################
     #
@@ -473,18 +475,18 @@ class BlastParse(object):
             delims += block[0].strip()
         return delims
 
-    def _var_germ_aa_sequence(self, blocks, p, l):
+    def _var_germ_aa_sequence(self, blocks, p, ln):
 
         self.var_germ_aa_seq_raw = ''
         for block in blocks:
-            self.var_germ_aa_seq_raw += block[4][p:p + l]
+            self.var_germ_aa_seq_raw += block[4][p:p + ln]
         self.var_germ_aa_seq = ''.join(self.var_germ_aa_seq_raw.split())
 
-    def _var_aa_sequence(self, blocks, p, l):
+    def _var_aa_sequence(self, blocks, p, ln):
 
         self.var_aa_seq_raw = ''
         for block in blocks:
-            self.var_aa_seq_raw += block[1][p:p + l]
+            self.var_aa_seq_raw += block[1][p:p + ln]
         self.var_aa_seq = ''.join(self.var_aa_seq_raw.split())[:len(self.var_germ_aa_seq)]
 
     def _var_nt_alignment(self, blocks):
@@ -505,7 +507,7 @@ class BlastParse(object):
 
     def _var_reading_frame(self):
 
-        alignment_start = re.search("\S", self.var_aa_seq_raw).start()
+        alignment_start = re.search(r'\S', self.var_aa_seq_raw).start()
         return alignment_start - 1
 
     def _var_germ_offsets(self, blocks):
@@ -552,7 +554,7 @@ class BlastParse(object):
 
         # fix ambigs and indels
         if 'N' in self.div_nt_seq:
-            self._fix_d_ambigs
+            self._fix_d_ambigs()
         self.div_ins = []
         self.div_del = []
         if self._d_indel_check():
@@ -581,10 +583,10 @@ class BlastParse(object):
         while self.div_nt_alignment[-1] == '-':
             self.div_nt_alignment = self.div_nt_alignment[:-1]
         if self.d_trunc_end > 0:
-            self.div_nt_alignment[:-self.d_trunc_end]
+            self.div_nt_alignment = self.div_nt_alignment[:-self.d_trunc_end]
         return start, len(self.div_nt_alignment)
 
-    def _div_nt_seq(self, blocks, s, l):
+    def _div_nt_seq(self, blocks, s, ln):
 
         self.div_nt_seq = ''
         for block in blocks:
@@ -593,7 +595,7 @@ class BlastParse(object):
             while 'Query_' not in row:
                 row = next(i)
             self.div_nt_seq += row.split()[2]
-        self.div_nt_seq = self.div_nt_seq[s:s + l]
+        self.div_nt_seq = self.div_nt_seq[s:s + ln]
 
     def _div_nt_mutations(self):
 
@@ -647,7 +649,7 @@ class BlastParse(object):
             self.join_nt_alignment = self.join_nt_alignment[1:]
         return len(self.join_nt_alignment)
 
-    def _join_nt_seq(self, blocks, l):
+    def _join_nt_seq(self, blocks, ln):
 
         self.join_nt_seq = ''
         for block in blocks:
@@ -656,7 +658,7 @@ class BlastParse(object):
             while 'Query_' not in row:
                 row = next(i)
             self.join_nt_seq += row.split()[2]
-        start = len(self.join_nt_seq) - l
+        start = len(self.join_nt_seq) - ln
         self.join_nt_seq = self.join_nt_seq[start:]
 
     def _join_nt_mutations(self):
@@ -950,7 +952,7 @@ class BlastParse(object):
     # -----------------
 
     def _fix_v_ambigs(self):
-        for n in re.finditer('N|n', self.var_nt_seq):
+        for n in re.finditer('[Nn]', self.var_nt_seq):
             i = n.start()
             if self.var_nt_alignment[i] != '-':
                 self.var_nt_seq = self.var_nt_seq[:i] + self.var_nt_alignment[i] + self.var_nt_seq[i + 1:]
@@ -1012,12 +1014,12 @@ class BlastParse(object):
     def _fix_v_ins(self, ins):
         ins.sort(key=lambda x: x.start(), reverse=True)
         for i in ins:
-            l = i.end() - i.start()
+            ln = i.end() - i.start()
             if self.debug:
                 print i.start()
                 print i.end()
-                print l
-            if l % 3 == 0:
+                print ln
+            if ln % 3 == 0:
                 self._v_nfs_ins(i.start(), i.end())
             else:
                 self._v_fs_ins(i.start(), i.end())
@@ -1037,12 +1039,12 @@ class BlastParse(object):
     def _fix_v_dels(self, dels):
         dels.sort(key=lambda x: x.start(), reverse=True)
         for d in dels:
-            l = d.end() - d.start()
+            ln = d.end() - d.start()
             if self.debug:
                 print d.start()
                 print d.end()
-                print l
-            if l % 3 == 0:
+                print ln
+            if ln % 3 == 0:
                 self._v_nfs_del(d.start(), d.end())
             else:
                 self._v_fs_del(d.start(), d.end())
@@ -1070,7 +1072,7 @@ class BlastParse(object):
 
     def _fix_d_ambigs(self):
 
-        for n in re.finditer('N|n', self.div_nt_seq):
+        for n in re.finditer('[Nn]', self.div_nt_seq):
             i = n.start()
             if self.div_nt_alignment[i] != '-':
                 self.div_nt_seq = self.div_nt_seq[:i] + self.div_nt_alignment[i] + self.div_nt_seq[i + 1:]
@@ -1083,6 +1085,9 @@ class BlastParse(object):
         if '-' in self.div_nt_seq:
             return True
         return False
+
+    def _d_fix_dels(self):
+        pass
 
     def _fix_d_indels(self):
 
@@ -1102,12 +1107,12 @@ class BlastParse(object):
         for i in re.finditer('-+', self.div_nt_alignment):
             s = i.start() - o
             e = i.end() - o
-            l = e - s
-            if l % 3 == 0:
+            ln = e - s
+            if ln % 3 == 0:
                 self._d_nfs_ins(s, e)
             else:
                 self._d_fs_ins(s, e)
-                o += l
+                o += ln
 
     def _d_nfs_ins(self, s, e):
 
@@ -1127,12 +1132,12 @@ class BlastParse(object):
         for i in re.finditer('-+', self.div_nt_seq):
             s = i.start() - o
             e = i.end() - o
-            l = e - s
-            if l % 3 == 0:
+            ln = e - s
+            if ln % 3 == 0:
                 self._d_nfs_del(s, e)
             else:
                 self._d_fs_del(s, e)
-                o += l
+                o += ln
 
     def _d_nfs_del(self, s, e):
 
@@ -1153,7 +1158,7 @@ class BlastParse(object):
 
     def _fix_j_ambigs(self):
 
-        for n in re.finditer('N|n', self.join_nt_seq):
+        for n in re.finditer('[Nn]', self.join_nt_seq):
             i = n.start()
             if self.join_nt_alignment[i] != '-':
                 self.join_nt_seq = self.join_nt_seq[:i] + self.join_nt_alignment[i] + self.join_nt_seq[i + 1:]
@@ -1185,12 +1190,12 @@ class BlastParse(object):
         for i in re.finditer('-+', self.join_nt_alignment):
             s = i.start() - o
             e = i.end() - o
-            l = e - s
-            if l % 3 == 0:
+            ln = e - s
+            if ln % 3 == 0:
                 self._j_nfs_ins(s, e)
             else:
                 self._j_fs_ins(s, e)
-                o += l
+                o += ln
 
     def _j_nfs_ins(self, s, e):
 
@@ -1208,12 +1213,15 @@ class BlastParse(object):
         for i in re.finditer('-+', self.join_nt_seq):
             s = i.start() - o
             e = i.end() - o
-            l = e - s
-            if l % 3 == 0:
+            ln = e - s
+            if ln % 3 == 0:
                 self._j_nfs_del(s, e)
             else:
                 self._j_fs_del(s, e)
-                o += l
+                o += ln
+
+    def join_del_append(self, s):
+        pass
 
     def _j_nfs_del(self, s, e):
 
@@ -1237,8 +1245,9 @@ class BlastParse(object):
         if self.chain == 'heavy':
             self.vdj_nt = self.var_nt_seq + self.n1_nt + self.div_nt + self.n2_nt + self.join_nt_seq
         else:
+            # prevents double-counting of residues that  IgBLAST identifies as 'overlapping' in the V-J junction
             self.join_nt_seq = self.join_nt_seq[
-                               self._j_overlap_offset:]  # prevents double-counting of residues that  IgBLAST identifies as 'overlapping' in the V-J junction
+                               self._j_overlap_offset:]
             self.vdj_nt = self.var_nt_seq + self.n_nt + self.join_nt_seq
 
         self.vdj_aa = str(Seq(self.vdj_nt[self.var_readframe:], IUPAC.ambiguous_dna).translate())
