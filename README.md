@@ -23,7 +23,7 @@ Two helper scripts are included:
 `mongoimport.py` iteratively imports a directory of JSON files into a MongoDB database.  
   
 ## Requirements  
-Python >= 2.7
+Python 2 >= 2.7
 biopython < 1.76
 
 batch_merge requires PANDAseq (https://github.com/neufeld/pandaseq)  
