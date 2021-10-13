@@ -22,16 +22,21 @@ Two helper scripts are included:
 `batch_merge.py` performs PANDAseq merging on a directory of paired FASTQ (or gzipped FASTQ) files.   
 `mongoimport.py` iteratively imports a directory of JSON files into a MongoDB database.  
   
-## Requirements  
-Python 2 >= 2.7
-biopython < 1.76
+## Requirements
+Python 2 >= 2.7  
+biopython <= 1.76
 
-batch_merge requires PANDAseq (https://github.com/neufeld/pandaseq)  
-mongoimport requries MongoDB (http://www.mongodb.org/) and pymongo  
+`batch_merge.py` requires PANDAseq (https://github.com/neufeld/pandaseq)  
+`mongoimport.py` requires MongoDB <= 4.4 (http://www.mongodb.org/) and pymongo <= 3.11.4
 
 ## Notes
-You don't need to install *igblastn*. The binaries are included in this repository. 
+You **don't** need to install *igblastn*. The binaries are included in this repository.  
+*AbAnalysis* should work correctly with Windows(x86, x64), Linux, OS X  
+biopython <= 1.76 since it was the last version with Python 2.7 support  
 
-*ab_analysis.py* should work correctly with Windows(x86, x64), Linux, OS X
 
-biopython < 1.76 since it was the last version with Python 2.7 support
+You can install almost all the requirements with *pip* or *anaconda*  
+For example, pip install biopython==1.75
+
+pandaseq will require some level of professional skills to compile binaries for Windows.
+OS X/Linux compiled versions you can find under the official releases tab on GitHub (https://github.com/neufeld/pandaseq/releases)
