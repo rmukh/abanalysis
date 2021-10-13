@@ -70,34 +70,37 @@ parser.add_argument('-s', '--species', dest='species', default='human', choices=
 args = parser.parse_args()
 
 
-def get_system_name():
+def get_system_name(script_path="./"):
     raw_name = platform.system().lower()
 
     name = ""
     if "darwin" in raw_name:
-        name = "./igblastn_darwin"
+        name = os.path.join(script_path, "igblastn_darwin")
     elif "linux" in raw_name:
-        name = "./igblastn_linux"
+        name = os.path.join(script_path, "igblastn_linux")
     elif "win" in raw_name:
         if sys.maxsize > 2 ** 32:
-            name = "igblastn_win64.exe"
+            name = os.path.join(script_path, "igblastn_win64.exe")
         else:
-            name = "igblastn_win32.exe"
+            name = os.path.join(script_path, "igblastn_win32.exe")
 
     return name
 
 
 class LaunchThread(threading.Thread):
 
-    def __init__(self, in_file, out_file, binary):
+    def __init__(self, in_file, out_file, binary, script_path):
         threading.Thread.__init__(self)
         self.in_file = in_file
         self.out_file = out_file
-        self.cmd = "{3} -germline_db_V database/{0}_gl_V -germline_db_J database/{0}_gl_J " \
-                   "-germline_db_D database/{0}_gl_D -organism {0} -domain_system imgt " \
-                   "-auxiliary_data optional_file/{0}_gl.aux -show_translation -outfmt 3 " \
+
+        db_path = os.path.join(script_path, "database", "{0}".format(args.species))
+        opt_file = os.path.join(script_path, "optional_file", "{0}".format(args.species))
+        self.cmd = "{3} -germline_db_V {4}_gl_V -germline_db_J {4}_gl_J " \
+                   "-germline_db_D {4}_gl_D -organism {0} -domain_system imgt " \
+                   "-auxiliary_data {5}_gl.aux -show_translation -outfmt 3 " \
                    "-num_alignments_V 1 -num_alignments_D 1 -num_alignments_J 1 -query {1}" \
-                   " -out {2}".format(args.species, self.in_file, self.out_file, binary)
+                   " -out {2}".format(args.species, self.in_file, self.out_file, binary, db_path, opt_file)
 
     def run(self):
         p = Popen(self.cmd, shell=True, stdout=PIPE, stderr=PIPE)
@@ -114,8 +117,8 @@ def build_temp_dirs():
     if args.temp_dir != '':
         temp_directory = args.temp_dir
     else:
-        temp_directory = "./temp_files"
-    temp_out_directory = temp_directory + "/temp_output"
+        temp_directory = "temp_files"
+    temp_out_directory = os.path.join(temp_directory, "temp_output")
     if not os.path.exists(temp_directory):
         os.mkdir(temp_directory)
     if not os.path.exists(temp_out_directory):
@@ -168,10 +171,10 @@ def file_splitter(file_name, splitlen, num_seqs, temp_directory):
     lines = open(file_name, 'r').read().replace(' ', '_').split('>')
     for line in range(0, num_seqs + 1, splitlen):
         output = lines[line:line + splitlen]
-        temp_filename = temp_directory + "/tempfile_" + str(counter)
+        temp_filename = os.path.join(temp_directory, "tempfile_" + str(counter))
         files_list.append(temp_filename)
         open(temp_filename, "w").write("")
-        temp_file = open(temp_directory + "/tempfile_" + str(counter), "a")
+        temp_file = open(os.path.join(temp_directory, "tempfile_" + str(counter)), "a")
         if counter == 1:
             temp_file.write('>'.join(output))
             counter += 1
@@ -421,11 +424,15 @@ def parallel_igblast(in_file, out_file):
     thread_list = []
     blastout_list = []
 
-    os_name = get_system_name()
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    os_name = get_system_name(script_path)
+    # set IgBLASTn system variable
+    os.environ["IGDATA"] = script_path
+
     # run IgBLASTn in parallel
     for f in split_files:
         temp_out_file = os.path.join(temp_out_directory, os.path.basename(f).split('.')[0] + "_blastout")
-        t = LaunchThread(f, temp_out_file, os_name)
+        t = LaunchThread(f, temp_out_file, os_name, script_path)
         t.start()
         thread_list.append(t)
         blastout_list.append(temp_out_file)
