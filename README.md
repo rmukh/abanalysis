@@ -1,4 +1,4 @@
-# AbAnalysis (updated)
+# AbAnalysis (Python 3 only)
 
 ## Usage
 
