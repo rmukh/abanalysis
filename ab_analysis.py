@@ -253,7 +253,6 @@ def block_generator(blast_file):
         except StopIteration:
             yield block
             break
-    raise StopIteration
 
 
 def do_parse(blastout):
@@ -261,13 +260,10 @@ def do_parse(blastout):
     result = []
     pool = Pool(processes=cpu_count())
     for i in block_generator(blastout):
-        try:
-            if args.debug:
-                result.append(parser(i))
-            else:
-                result.append(pool.apply_async(parser, (i,)))
-        except StopIteration:
-            break
+        if args.debug:
+            result.append(parser(i))
+        else:
+            result.append(pool.apply_async(parser, (i,)))
     pool.close()
     pool.join()
     good, exceptions, failed = process_parse_data(result, out_file)
