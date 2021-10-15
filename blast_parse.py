@@ -23,7 +23,7 @@ import warnings
 
 from Bio.Seq import Seq
 from Bio import pairwise2
-from Bio.SubsMat import MatrixInfo as MatList
+from Bio.Align import substitution_matrices
 
 
 class BlastParse(object):
@@ -763,7 +763,7 @@ class BlastParse(object):
     def _find_junction_start(self):
 
         scores = []
-        matrix = MatList.blosum62
+        matrix = substitution_matrices.load("BLOSUM62")
 
         fr3_start = len(self.FR1_aa + self.CDR1_aa + self.FR2_aa + self.CDR2_aa)
         germ = self._get_v_chunk(self.var_gene)
@@ -781,7 +781,7 @@ class BlastParse(object):
     def _find_junction_end(self, start):
 
         scores = []
-        matrix = MatList.blosum62
+        matrix = substitution_matrices.load("BLOSUM62")
 
         germ = self._get_j_chunk(self.join_gene)
         for i in range(start, len(self.vdj_aa) - 1):
