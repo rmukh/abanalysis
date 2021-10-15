@@ -37,3 +37,5 @@ You can install almost all the requirements with *pip* or *anaconda*
 
 pandaseq will require some level of professional skills to compile binaries for Windows.
 OS X/Linux compiled versions you can find under the official releases tab on GitHub (https://github.com/neufeld/pandaseq/releases)
+
+If you need Python 2 version, please, download python2 branch.
