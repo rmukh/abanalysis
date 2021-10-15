@@ -26,20 +26,20 @@ def process_raw_seqs(f, out_dir):
 
 
 def print_start_info():
-	print ''
-	print ''
-	print '========================================'
-	print "Pre-processing samples"
-	print '========================================'
-	print ''
+	print('')
+	print('')
+	print('========================================')
+	print("Pre-processing samples")
+	print('========================================')
+	print('')
 
 
 def print_input_info(files):
-	print 'Pre-processing sequences from {0} files to retain raw sequence data after IgBLAST...'.format(len(files))
+	print('Pre-processing sequences from {0} files to retain raw sequence data after IgBLAST...'.format(len(files)))
 
 
 def print_sample_end():
-	print 'Done.\n'
+	print('Done.\n')
 
 
 def run(files, output):
