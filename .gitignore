@@ -68,3 +68,7 @@ target/
 # outputs/temps
 output/
 temp_files/
+internal_data/human/.svn
+internal_data/rabbit/.svn/
+internal_data/rat/.svn/
+optional_file/.svn/
