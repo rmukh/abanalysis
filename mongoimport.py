@@ -66,20 +66,20 @@ def get_collection(i):
 
 def main():
     if args.log == "mongoimport.log":
-        print "The default log file name is set: mongoimport.log"
+        print("The default log file name is set: mongoimport.log")
 
     in_files = listdir_full_path(args.input_dir)
     log_handle = open(args.log, 'a')
     open(args.log, 'w').write('')
     for i in in_files:
         coll = get_collection(i)
-        print "\nPerforming mongoimport on {0}.\nImporting the file into collection {1}.".format(os.path.basename(i),
-                                                                                                 coll)
+        print("\nPerforming mongoimport on {0}.\nImporting the file into collection {1}.".format(os.path.basename(i),
+                                                                                                 coll))
         log_handle.write("\n\n----------------------------------------"
                          "\nFile: {0}\\Collection: {1}\n"
                          "----------------------------------------\n".format(i, coll))
         mongo_import(i, args.db, coll, log_handle)
-    print "\nDone. {0} files were imported into MongoDB.\n\n".format(len(in_files))
+    print("\nDone. {0} files were imported into MongoDB.\n\n".format(len(in_files)))
 
 
 if __name__ == '__main__':

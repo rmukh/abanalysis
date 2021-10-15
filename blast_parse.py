@@ -23,8 +23,7 @@ import warnings
 
 from Bio.Seq import Seq
 from Bio import pairwise2
-from Bio.Alphabet import IUPAC
-from Bio.SubsMat import MatrixInfo as MatList
+from Bio.Align import substitution_matrices
 
 
 class BlastParse(object):
@@ -107,7 +106,7 @@ class BlastParse(object):
             return 0
         except StopIteration:
             if self.debug:
-                print "Rearrangement check failed."
+                print("Rearrangement check failed.")
             return 1
 
     def _gene_check(self):
@@ -125,14 +124,14 @@ class BlastParse(object):
         if v_gene[:3] == 'IGH':
             if line[3] != 'VH' or line[2][:2] != 'IG':
                 if self.debug:
-                    print 'Gene check failed.'
+                    print('Gene check failed.')
                 return 1
 
         # light chains
         elif v_gene[:3] in ('IGK', 'IGL'):
             if line[2] not in ('VK', 'VL') or line[1][:2] != 'IG':
                 if self.debug:
-                    print 'Gene check failed.'
+                    print('Gene check failed.')
                 return 1
 
         return 0
@@ -157,12 +156,12 @@ class BlastParse(object):
             countdown -= 1
         if row.split()[0] != 'FR3-IMGT':
             if self.debug:
-                print "Region check failed. Didn't find FR3-IMGT region. Found '{}' instead.".format(
-                    row.split()[0])
+                print("Region check failed. Didn't find FR3-IMGT region. Found '{}' instead.".format(
+                    row.split()[0]))
             return 1
         elif row.split()[3] == 'N/A' or int(row.split()[3]) < 25:
             if self.debug:
-                print 'Region check failed.'
+                print('Region check failed.')
             return 1
 
         # check the Total line
@@ -170,7 +169,7 @@ class BlastParse(object):
             row = next(i)
         if row.split()[3] == 'N/A' or int(row.split()[3]) < 25:
             if self.debug:
-                print 'Region check failed.'
+                print('Region check failed.')
             return 1
 
         return 0
@@ -282,7 +281,7 @@ class BlastParse(object):
         self.uaid = self.raw_input[:self.uaid_len] if self.uaid_len else ''
         # self.seq_id = self.seq_id.split('_')[0]
         if self.debug:
-            print '\n\n' + self.seq_id
+            print('\n\n' + self.seq_id)
 
     def _parse_classification_chunk(self, chunk):
         pass
@@ -764,7 +763,7 @@ class BlastParse(object):
     def _find_junction_start(self):
 
         scores = []
-        matrix = MatList.blosum62
+        matrix = substitution_matrices.load("BLOSUM62")
 
         fr3_start = len(self.FR1_aa + self.CDR1_aa + self.FR2_aa + self.CDR2_aa)
         germ = self._get_v_chunk(self.var_gene)
@@ -782,7 +781,7 @@ class BlastParse(object):
     def _find_junction_end(self, start):
 
         scores = []
-        matrix = MatList.blosum62
+        matrix = substitution_matrices.load("BLOSUM62")
 
         germ = self._get_j_chunk(self.join_gene)
         for i in range(start, len(self.vdj_aa) - 1):
@@ -885,8 +884,8 @@ class BlastParse(object):
 
         trunc_gene = gene[:5]
         if self.debug:
-            print self.species
-            print trunc_gene
+            print(self.species)
+            print(trunc_gene)
         germs = {
             'human': {'IGHJ1': 'WGQGT',
                       'IGHJ2': 'WGRGT',
@@ -1016,9 +1015,9 @@ class BlastParse(object):
         for i in ins:
             ln = i.end() - i.start()
             if self.debug:
-                print i.start()
-                print i.end()
-                print ln
+                print(i.start())
+                print(i.end())
+                print(ln)
             if ln % 3 == 0:
                 self._v_nfs_ins(i.start(), i.end())
             else:
@@ -1041,9 +1040,9 @@ class BlastParse(object):
         for d in dels:
             ln = d.end() - d.start()
             if self.debug:
-                print d.start()
-                print d.end()
-                print ln
+                print(d.start())
+                print(d.end())
+                print(ln)
             if ln % 3 == 0:
                 self._v_nfs_del(d.start(), d.end())
             else:
@@ -1061,10 +1060,9 @@ class BlastParse(object):
         self.var_nt_alignment = self.var_nt_alignment[:s] + '.' * (e - s) + self.var_nt_alignment[e:]
 
     def _v_retranslate(self):
-        self.var_aa_seq = Seq(self.var_nt_seq[self.var_readframe:len(self.var_nt_alignment)],
-                              IUPAC.ambiguous_dna).translate()
+        self.var_aa_seq = Seq(self.var_nt_seq[self.var_readframe:len(self.var_nt_alignment)]).translate()
         if self.debug:
-            print 'var_aa:', self.var_aa_seq
+            print('var_aa:', self.var_aa_seq)
 
     # -----------------
     #   DIVERSITY
@@ -1250,7 +1248,7 @@ class BlastParse(object):
                                self._j_overlap_offset:]
             self.vdj_nt = self.var_nt_seq + self.n_nt + self.join_nt_seq
 
-        self.vdj_aa = str(Seq(self.vdj_nt[self.var_readframe:], IUPAC.ambiguous_dna).translate())
+        self.vdj_aa = str(Seq(self.vdj_nt[self.var_readframe:]).translate())
 
     ######################################################
     #
@@ -1301,11 +1299,11 @@ class BlastParse(object):
 
     def _var_region_aa_seqs(self):
 
-        self.FR1_aa = str(Seq(self.FR1_nt[self.var_readframe:], IUPAC.ambiguous_dna).translate())
-        self.CDR1_aa = str(Seq(self.CDR1_nt, IUPAC.ambiguous_dna).translate())
-        self.FR2_aa = str(Seq(self.FR2_nt, IUPAC.ambiguous_dna).translate())
-        self.CDR2_aa = str(Seq(self.CDR2_nt, IUPAC.ambiguous_dna).translate())
-        self.FR3_aa = str(Seq(self.FR3_nt, IUPAC.ambiguous_dna).translate())
+        self.FR1_aa = str(Seq(self.FR1_nt[self.var_readframe:]).translate())
+        self.CDR1_aa = str(Seq(self.CDR1_nt).translate())
+        self.FR2_aa = str(Seq(self.FR2_nt).translate())
+        self.CDR2_aa = str(Seq(self.CDR2_nt).translate())
+        self.FR3_aa = str(Seq(self.FR3_nt).translate())
 
     def _var_region_nt_muts(self, r):
 
@@ -1428,8 +1426,8 @@ class BlastParse(object):
         [(a1, a2, score, begin, end)] = pairwise2.align.globalms(self.var_germ_aa_seq, self.var_aa_seq, 1, 0, -10, -1,
                                                                  one_alignment_only=True)
         if self.debug:
-            print a1
-            print a2
+            print(a1)
+            print(a2)
         for i, nt in enumerate(a1):
             if nt == '-' or a2[i] == '-':
                 continue
@@ -1443,7 +1441,7 @@ class BlastParse(object):
             mismatches += len(self.var_del)
         self.var_aa_identity = round(100. * matches / (matches + mismatches), 2)
         if self.debug:
-            print self.var_aa_identity
+            print(self.var_aa_identity)
 
     def _get_join_aa_identity(self):
 
@@ -1778,7 +1776,7 @@ class BlastParse(object):
                     ('alignment', self.pretty_alignment)
                 ])
 
-        for i in output.keys():
+        for i in list(output.keys()):
             if output[i] == "":
                 del output[i]
             elif not output[i]:

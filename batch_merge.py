@@ -76,12 +76,12 @@ def main():
         o = args.output
     pandaseq.run(args.input, o, args.nextseq)
     if args.nextseq:
-        print ''
-        print 'Concatenating NextSeq lane files for each sample...'
+        print('')
+        print('Concatenating NextSeq lane files for each sample...')
         concat(o)
         remove_direc(o)
-        print 'Done.'
-        print ''
+        print('Done.')
+        print('')
 
 
 if __name__ == '__main__':

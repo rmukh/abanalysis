@@ -23,20 +23,17 @@ Two helper scripts are included:
 `mongoimport.py` iteratively imports a directory of JSON files into a MongoDB database.  
   
 ## Requirements
-Python 2 >= 2.7  
-biopython <= 1.76
+Python 3 >= 3.7  
+biopython >= 1.76
 
 `batch_merge.py` requires PANDAseq (https://github.com/neufeld/pandaseq)  
-`mongoimport.py` requires MongoDB <= 4.4 (http://www.mongodb.org/) and pymongo <= 3.11.4
+`mongoimport.py` requires MongoDB >= 2.6 (http://www.mongodb.org/) and pymongo >= 3.7
 
 ## Notes
 You **don't** need to install *igblastn*. The binaries are included in this repository.  
-*AbAnalysis* should work correctly with Windows(x86, x64), Linux, OS X  
-biopython <= 1.76 since it was the last version with Python 2.7 support  
+*AbAnalysis* should work correctly with Windows(x86, x64), Linux, OS X
 
-
-You can install almost all the requirements with *pip* or *anaconda*  
-For example, pip install biopython==1.75
+You can install almost all the requirements with *pip* or *anaconda*
 
 pandaseq will require some level of professional skills to compile binaries for Windows.
 OS X/Linux compiled versions you can find under the official releases tab on GitHub (https://github.com/neufeld/pandaseq/releases)

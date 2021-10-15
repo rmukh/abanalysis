@@ -61,24 +61,24 @@ def merge_reads(files, output, nextseq, i):
 
 
 def print_start_info():
-    print ''
-    print ''
-    print '========================================'
-    print 'Merging reads with PANDAseq'
-    print '========================================'
-    print ''
+    print('')
+    print('')
+    print('========================================')
+    print('Merging reads with PANDAseq')
+    print('========================================')
+    print('')
 
 
 def print_input_info(files):
-    print 'The input directory contains {} pair(s) of files to be merged.\n'.format(len(files) / 2)
+    print('The input directory contains {} pair(s) of files to be merged.\n'.format(len(files) / 2))
 
 
 def print_sample_info(i, sample):
-    print '[ {} ]  Processing sample {}'.format(str(i), sample)
+    print('[ {} ]  Processing sample {}'.format(str(i), sample))
 
 
 def print_sample_end():
-    print 'Done.\n'
+    print('Done.\n')
 
 
 def run(f_input, output, nextseq):

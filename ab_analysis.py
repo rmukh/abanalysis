@@ -192,36 +192,36 @@ def file_splitter(file_name, splitlen, num_seqs, temp_directory):
 #####################################################################
 
 def print_input_info(i):
-    print ''
-    print ''
-    print '========================================'
-    print 'Parallel IgBLAST'
-    print '========================================'
-    print ''
+    print('')
+    print('')
+    print('========================================')
+    print('Parallel IgBLAST')
+    print('========================================')
+    print('')
     if len(i) > 1:
-        print 'Input is a directory of {} files.\n\n'.format(len(i))
+        print('Input is a directory of {} files.\n\n'.format(len(i)))
     else:
-        print 'Input is a single file.\n\n'
+        print('Input is a single file.\n\n')
 
 
 def print_infile(i):
     b = os.path.basename(i)
-    print '-' * len(b)
-    print b
-    print '-' * len(b)
+    print('-' * len(b))
+    print(b)
+    print('-' * len(b))
 
 
 def print_summary_output(g, e, f, blast_time, parse_time):
     total_seqs = g + e + f
-    print ''
-    print 'Out of {} total sequences:'.format(total_seqs)
-    print '{} sequences processed normally'.format(g)
-    print '{} sequences passed sanity checks, but could not be processed'.format(e)
-    print '{} sequences failed sanity checks are were not processed'.format(f)
-    print ''
-    print 'IgBLAST took {0} seconds ({1} sequences per second)'.format(blast_time, total_seqs / blast_time)
-    print 'parsing took {0} seconds ({1} sequences per second)'.format(parse_time, total_seqs / parse_time)
-    print ''
+    print('')
+    print('Out of {} total sequences:'.format(total_seqs))
+    print('{} sequences processed normally'.format(g))
+    print('{} sequences passed sanity checks, but could not be processed'.format(e))
+    print('{} sequences failed sanity checks are were not processed'.format(f))
+    print('')
+    print('IgBLAST took {0} seconds ({1} sequences per second)'.format(blast_time, total_seqs / blast_time))
+    print('parsing took {0} seconds ({1} sequences per second)'.format(parse_time, total_seqs / parse_time))
+    print('')
 
 
 #####################################################################
@@ -253,7 +253,6 @@ def block_generator(blast_file):
         except StopIteration:
             yield block
             break
-    raise StopIteration
 
 
 def do_parse(blastout):
@@ -261,13 +260,10 @@ def do_parse(blastout):
     result = []
     pool = Pool(processes=cpu_count())
     for i in block_generator(blastout):
-        try:
-            if args.debug:
-                result.append(parser(i))
-            else:
-                result.append(pool.apply_async(parser, (i,)))
-        except StopIteration:
-            break
+        if args.debug:
+            result.append(parser(i))
+        else:
+            result.append(pool.apply_async(parser, (i,)))
     pool.close()
     pool.join()
     good, exceptions, failed = process_parse_data(result, out_file)
@@ -349,9 +345,9 @@ def check_input(input_list):
 
 def format_check(in_file):
     with open(in_file) as f:
-        line = f.next()
+        line = next(f)
         while line == '':
-            line = f.next()
+            line = next(f)
         if line.startswith('>'):
             return 'fasta'
         elif line.startswith('@'):
